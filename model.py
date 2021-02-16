@@ -4,7 +4,7 @@ from keras.layers import Conv2D, MaxPooling2D, Activation
 from keras.layers import Flatten, Dropout, Dense, BatchNormalization
 
 from keras.layers.advanced_activations import PReLU
-from keras.optimizers import Adam
+from keras.optimizers import Adam, SGD
 from keras.initializers import GlorotNormal, HeNormal
 
 import tensorflow as tf
@@ -76,11 +76,11 @@ class ConcreteModel(HyperModel):
         
         model.add(Dense(self.num_classes, activation='softmax'))
        
-        model.compile()
+        model.compile(optimizer=SGD(learning_rate=0.1, momentum=0.9, decay = 0.0001))
         return model
 
     def define_hp(hp_model = None):
-        hp = new ConcreateHyperParameters()
+        hp = ConcreateHyperParameters()
         return hp
 
     def generate_model_name(iterable, **kwarg):

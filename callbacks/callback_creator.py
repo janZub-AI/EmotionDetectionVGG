@@ -1,5 +1,4 @@
-from keras.callbacks import TensorBoard, ModelCheckpoint, LearningRateScheduler
-
+from keras.callbacks import TensorBoard, ModelCheckpoint, LearningRateScheduler, ReduceLROnPlateau
 from callbacks.early_stopping import EarlyStoppingAt
 
 class CallbackCreator():
@@ -10,7 +9,7 @@ class CallbackCreator():
                 verbose = 1,
                 monitor= monitor,
                 mode='auto',
-                period = 5,
+                period = 10,
                 save_best_only=True)
                 
     def get_tensorboard(log_dir):
@@ -21,12 +20,13 @@ class CallbackCreator():
                 update_freq = 'epoch')
 
     def get_lr_scheduler():
-        def scheduler(epoch, lr):
-            if epoch % 5 == 0:
-                lr = lr*0.8
-            return lr
+        dlearning_rate_reduction = ReduceLROnPlateau(monitor='val_accuracy', 
+                                            patience=10, 
+                                            verbose=1, 
+                                            factor=0.5, 
+                                            min_lr=0.000001)
 
-        return LearningRateScheduler(scheduler)
+        return dlearning_rate_reduction
 
     def get_early_stopping(stop_at = 'val_loss'):
         return EarlyStoppingAt(patience = 3, ignored_epoch = 5, stop_at = stop_at)

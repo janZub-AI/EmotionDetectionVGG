@@ -59,14 +59,14 @@ es_callback = CallbackCreator.get_early_stopping()
 # params
 TUNER_SETTINGS = {
     'log_dir' : f'logs/{current_time}',    
-    'batch_size' : 256,  
+    'batch_size' : 128,  
     'batches_per_category' : 100000,
     'batches_for_validation' : 10000,
     'epochs' : 100,
     'max_trials' : 2,
     'executions_per_trial' : 1,
     'objective' : 'val_loss',
-    'callbacks' : [es_callback, lr_callback, mc_callback]
+    'callbacks' : [lr_callback, mc_callback]
     }
 
 # params
