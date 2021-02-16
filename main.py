@@ -46,10 +46,10 @@ def run_tuner(hypermodel, hp):
         project_name = project_name)
 
     tuner.search(train_dataset, validation_data = dev_dataset,
-                batch_size = TUNER_SETTINGS['batch_size'],
-                callbacks = TUNER_SETTINGS['callbacks'] + [tb_callback],
-                epochs = TUNER_SETTINGS['epochs']
-                )
+        batch_size = TUNER_SETTINGS['batch_size'],
+        callbacks = TUNER_SETTINGS['callbacks'] + [tb_callback],
+        epochs = TUNER_SETTINGS['epochs']
+        )
 
 # callbacks
 mc_callback = CallbackCreator.get_model_checkout(current_time)
