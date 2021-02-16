@@ -7,6 +7,7 @@ from keras.layers.advanced_activations import PReLU
 from keras.optimizers import Adam
 from keras.initializers import GlorotNormal, HeNormal
 
+import tensorflow as tf
 from kerastuner import HyperModel, HyperParameters
 import uuid
 class ConcreteModel(HyperModel):
@@ -28,7 +29,7 @@ class ConcreteModel(HyperModel):
         activation = Activation('relu')
 
         model = Sequential()
-         
+              
         model.add(Conv2D(filters = 64, kernel_size = (3, 3), padding = 'same', input_shape = self.input_shape, kernel_initializer=initializer))
         model.add(BatchNormalization())
         model.add(activation)
@@ -74,8 +75,8 @@ class ConcreteModel(HyperModel):
         model.add(activation)
         
         model.add(Dense(self.num_classes, activation='softmax'))
-
-        model.compile(optimizer = Adam())
+       
+        model.compile()
         return model
 
     def define_hp(hp_model = None):

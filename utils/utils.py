@@ -12,43 +12,47 @@ from sklearn.preprocessing import OneHotEncoder
 import matplotlib.pyplot as plt
 import sys
 
-from data_operations import DataOperations
+from utils.data_operations import DataOperations
 
 dirname = os.path.join(os.path.dirname( __file__ ), os.pardir)
-max_int = sys.maxsize * 2 + 1
+max_int = 99999
 
 class Utils():
     def load_dataset(subfolder, batch_size = 32, take_batches = max_int, aug_data = False):
 
-        def parse_function(filename, label):
-            image_string = tf.io.read_file(filename)
-            image_decoded = tf.image.decode_jpeg(image_string, channels=1)
-            image = tf.cast(image_decoded/255, tf.float32)
-            image = tf.image.resize(image, [48, 48])
-            return image, label
-        def get_labels_as_ints(values):
-            label_encoder = LabelEncoder()
-            integer_encoded = label_encoder.fit_transform(values)
-            #onehot_encoder = OneHotEncoder(sparse=False, dtype=np.int32)
-            #integer_encoded = integer_encoded.reshape(len(integer_encoded), 1)
-            #return onehot_encoder.fit_transform(integer_encoded)
-            return integer_encoded
 
         df = DataOperations.get_data(os.path.join(dirname, subfolder), take = batch_size * take_batches)
 
         if(aug_data):
-            df = df + DataOperations.get_data(os.path.join(dirname, f'aug_{subfolder}'), batch_size * take_batches)
+            df = df.append(DataOperations.get_data(os.path.join(dirname, f'aug_{subfolder}'), take = batch_size * take_batches))
 
-        labels_as_ints = get_labels_as_ints(df.get('class'))     
+        labels_as_ints = Utils.get_labels_as_ints(df.get('class'))     
         labels = tf.convert_to_tensor(labels_as_ints)
         image_paths = tf.convert_to_tensor(df.get('filename'), dtype=tf.string)
 
         dataset = tf.data.Dataset.from_tensor_slices((image_paths, labels))
-        dataset = dataset.map(parse_function, num_parallel_calls = 10)
+        dataset = dataset.map(Utils.parse_function, num_parallel_calls = 10)
         dataset = dataset.batch(batch_size)
-        dataset = dataset.cache() 
-        
+        dataset.shuffle(1000000)
+        dataset = dataset.cache()
+
         return dataset
+
+    def parse_function(filename, label):
+        image_string = tf.io.read_file(filename)
+        image_decoded = tf.image.decode_jpeg(image_string, channels=1)
+        image = tf.cast(image_decoded/255, tf.float32)
+        image = tf.image.resize(image, [48, 48])
+        return image, label
+
+    def get_labels_as_ints(values):
+        label_encoder = LabelEncoder()
+        integer_encoded = label_encoder.fit_transform(values)
+        #onehot_encoder = OneHotEncoder(sparse=False, dtype=np.int32)
+        #integer_encoded = integer_encoded.reshape(len(integer_encoded), 1)
+        #return onehot_encoder.fit_transform(integer_encoded)
+        return integer_encoded
+
 
     def plot_images_summary():
         def count_exp(path, set_):

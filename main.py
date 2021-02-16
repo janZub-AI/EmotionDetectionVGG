@@ -1,27 +1,28 @@
-
 from kerastuner.tuners import RandomSearch
 from keras.metrics import SparseTopKCategoricalAccuracy
 import datetime
 import time
 from utils.utils import Utils
-
+import tensorflow as tf
+from kerastuner import HyperModel, HyperParameters
 from model import ConcreteModel, ConcreateHyperParameters
-from rename_tensorboard import FileManager
+from utils.rename_tensorboard import FileManager
 from callbacks.callback_creator import CallbackCreator
 
 # global for logging and unique name
 current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-project_name = 'template'
-# callbacks
+project_name = 'vgg'
+
+if tf.config.list_physical_devices('GPU'):
+    physical_devices = tf.config.list_physical_devices('GPU')
+    tf.config.experimental.set_memory_growth(physical_devices[0], enable=True)
+    tf.config.experimental.set_virtual_device_configuration(physical_devices[0], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=8000)])
 
 # helpers
 def load_data():
-    train_data_per_category = TUNER_SETTINGS['batches_per_category'] * TUNER_SETTINGS['batch_size']
-    validation_data_per_category = TUNER_SETTINGS['batches_for_validation'] * TUNER_SETTINGS['batch_size']
 
-    dev_dataset = Utils.load_data('dev', validation_data_per_category, TUNER_SETTINGS['batch_size'])
-    train_dataset = Utils.load_data('train', train_data_per_category, TUNER_SETTINGS['batch_size'], True)
-
+    dev_dataset = Utils.load_dataset('dev', TUNER_SETTINGS['batch_size'], TUNER_SETTINGS['batches_for_validation'])
+    train_dataset = Utils.load_dataset('train', TUNER_SETTINGS['batch_size'], TUNER_SETTINGS['batches_per_category'])
     return train_dataset, dev_dataset
 
 # runner
@@ -58,26 +59,23 @@ es_callback = CallbackCreator.get_early_stopping()
 # params
 TUNER_SETTINGS = {
     'log_dir' : f'logs/{current_time}',    
-    'batch_size' : 32,  
-    'batches_per_category' : 10,
-    'batches_for_validation' : 2,
+    'batch_size' : 256,  
+    'batches_per_category' : 100000,
+    'batches_for_validation' : 10000,
     'epochs' : 100,
-    'max_trials' : 30,
+    'max_trials' : 2,
     'executions_per_trial' : 1,
     'objective' : 'val_loss',
     'callbacks' : [es_callback, lr_callback, mc_callback]
     }
 
 # params
-hyperparameters = ConcreateHyperParameters()
-hp = ConcreteModel.define_hp(hyperparameters)
 
-num_classes = 0
-input_shape = (1,1)
-hypermodel = ConcreteModel(num_classes = num_classes, input_shape = input_shape)
+hp = HyperParameters()
+hypermodel = ConcreteModel(num_classes = 7, input_shape = (48,48,1))
 
 run_tuner(hypermodel, hp)
 
-time.sleep(5.)
+print(TUNER_SETTINGS['log_dir'])
 FileManager.rename_files(TUNER_SETTINGS['log_dir'], hypermodel.generate_model_name, project_name)
 

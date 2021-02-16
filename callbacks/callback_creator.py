@@ -1,6 +1,6 @@
 from keras.callbacks import TensorBoard, ModelCheckpoint, LearningRateScheduler
 
-from early_stopping import EarlyStoppingAt
+from callbacks.early_stopping import EarlyStoppingAt
 
 class CallbackCreator():
     def get_model_checkout(current_time, monitor = 'val_loss'):
