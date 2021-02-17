@@ -5,19 +5,43 @@ import numpy as np
 import datetime
 import time
 from keras.utils import to_categorical
+from keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
 from numpy import array
 from numpy import argmax
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
 import matplotlib.pyplot as plt
 import sys
-
+from matplotlib import pyplot
 from utils.data_operations import DataOperations
 
 dirname = os.path.join(os.path.dirname( __file__ ), os.pardir)
 max_int = 99999
 
 class Utils():
+    
+    def load_data_generator(subfolder, batch_size):
+        generator = ImageDataGenerator(horizontal_flip = True, rescale=1./255, zca_whitening=True)
+        path = os.path.join(dirname, subfolder)
+        imgs = []
+        for f in DataOperations.get_data(path).get('filename'):
+            image = load_img(
+                    f, color_mode='grayscale', target_size=(48,48),
+                    interpolation='nearest'
+                )
+            img_array = img_to_array(image)
+            img_array = tf.cast(img_array ,tf.float32)
+            imgs.append(img_array)
+
+        generator.fit(imgs)
+
+        data = generator.flow_from_directory(directory = path,
+                                      target_size = (48,48), 
+                                      color_mode= 'grayscale',
+                                      batch_size=batch_size)
+
+        return data
+
     def load_dataset(subfolder, batch_size = 32, take_batches = max_int, aug_data = False):
 
 

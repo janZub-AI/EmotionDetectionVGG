@@ -3,13 +3,14 @@ from keras.models import load_model
 from keras.layers import Conv2D, MaxPooling2D, Activation
 from keras.layers import Flatten, Dropout, Dense, BatchNormalization
 
+from keras.layers.experimental.preprocessing import RandomCrop
 from keras.layers.advanced_activations import PReLU
 from keras.optimizers import Adam, SGD
 from keras.initializers import GlorotNormal, HeNormal
 
 import tensorflow as tf
 from kerastuner import HyperModel, HyperParameters
-import uuid
+
 class ConcreteModel(HyperModel):
     """ VGG-B without last C512_C512_P block,
         with relu and glorot,
@@ -29,7 +30,8 @@ class ConcreteModel(HyperModel):
         activation = Activation('relu')
 
         model = Sequential()
-              
+        model.add(RandomCrop(48,48))    
+
         model.add(Conv2D(filters = 64, kernel_size = (3, 3), padding = 'same', input_shape = self.input_shape, kernel_initializer=initializer))
         model.add(BatchNormalization())
         model.add(activation)
@@ -83,10 +85,9 @@ class ConcreteModel(HyperModel):
         hp = ConcreateHyperParameters()
         return hp
 
-    def generate_model_name(iterable, **kwarg):
-        #hp = kwarg['hp']    
-            
-        return f'VGG-B*{uuid.uuid4().hex}'
+    def generate_model_name(iterable, **kwarg): 
+        hp = kwarg['hp']
+        return f'VGG-B-{hp["name"]}'
 
 class ConcreateHyperParameters():
     """!Important! Ensure that if min provided, then max > min is specified either.

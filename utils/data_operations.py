@@ -8,7 +8,6 @@ class DataOperations():
     def get_data(dir, skip = 0, take = max_int):
         df = None
         for i in os.listdir(dir):
-            print(i)
             sub_dir = os.path.join(dir,i)
             if(df is None): 
                 df = DataOperations.get_data_for_category(sub_dir, skip=skip, take=take)

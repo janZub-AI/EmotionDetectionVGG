@@ -21,8 +21,10 @@ if tf.config.list_physical_devices('GPU'):
 # helpers
 def load_data():
 
-    dev_dataset = Utils.load_dataset('dev', TUNER_SETTINGS['batch_size'], TUNER_SETTINGS['batches_for_validation'])
-    train_dataset = Utils.load_dataset('train', TUNER_SETTINGS['batch_size'], TUNER_SETTINGS['batches_per_category'])
+    dev_dataset = Utils.load_data_generator('dev', TUNER_SETTINGS['batch_size'])
+    #Utils.load_dataset('dev', TUNER_SETTINGS['batch_size'], TUNER_SETTINGS['batches_for_validation'])
+    train_dataset =  Utils.load_data_generator('train', TUNER_SETTINGS['batch_size'])
+    #Utils.load_dataset('train', TUNER_SETTINGS['batch_size'], TUNER_SETTINGS['batches_per_category'])
     return train_dataset, dev_dataset
 
 # runner
@@ -39,7 +41,7 @@ def run_tuner(hypermodel, hp):
         objective = TUNER_SETTINGS['objective'],
         max_trials = TUNER_SETTINGS['max_trials'],      
         metrics= ['accuracy'], 
-        loss='sparse_categorical_crossentropy',
+        loss='categorical_crossentropy',
         hyperparameters = hp,
         executions_per_trial = TUNER_SETTINGS['executions_per_trial'],
         directory = TUNER_SETTINGS['log_dir'],     
@@ -62,7 +64,7 @@ TUNER_SETTINGS = {
     'batch_size' : 128,  
     'batches_per_category' : 100000,
     'batches_for_validation' : 10000,
-    'epochs' : 100,
+    'epochs' : 300,
     'max_trials' : 2,
     'executions_per_trial' : 1,
     'objective' : 'val_loss',
@@ -76,6 +78,5 @@ hypermodel = ConcreteModel(num_classes = 7, input_shape = (48,48,1))
 
 run_tuner(hypermodel, hp)
 
-print(TUNER_SETTINGS['log_dir'])
 FileManager.rename_files(TUNER_SETTINGS['log_dir'], hypermodel.generate_model_name, project_name)
 

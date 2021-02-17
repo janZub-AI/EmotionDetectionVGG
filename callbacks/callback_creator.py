@@ -2,7 +2,7 @@ from keras.callbacks import TensorBoard, ModelCheckpoint, LearningRateScheduler,
 from callbacks.early_stopping import EarlyStoppingAt
 
 class CallbackCreator():
-    def get_model_checkout(current_time, monitor = 'val_loss'):
+    def get_model_checkout(current_time, monitor = 'val_accuracy'):
         return ModelCheckpoint(
                 filepath = f'models_checkpoint/{current_time}/'+'{epoch:02d}-{' + monitor + ':.5f}.hdf5',
                 save_weights_only=False,
@@ -28,7 +28,7 @@ class CallbackCreator():
 
         return dlearning_rate_reduction
 
-    def get_early_stopping(stop_at = 'val_loss'):
+    def get_early_stopping(stop_at = 'val_accuracy'):
         return EarlyStoppingAt(patience = 3, ignored_epoch = 5, stop_at = stop_at)
 
 
