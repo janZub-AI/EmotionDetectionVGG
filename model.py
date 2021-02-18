@@ -1,7 +1,7 @@
 from keras.models import Sequential
 from keras.models import load_model
-from keras.layers import Conv2D, MaxPooling2D, Activation
-from keras.layers import Flatten, Dropout, Dense, BatchNormalization
+from keras.layers import Conv2D, MaxPooling2D, Cropping2D
+from keras.layers import Flatten, Dropout, Dense, BatchNormalization, Activation
 
 from keras.layers.experimental.preprocessing import RandomCrop
 from keras.layers.advanced_activations import PReLU
@@ -25,16 +25,24 @@ class ConcreteModel(HyperModel):
     def build(self, hp):
 
         # The same initializer
-        initializer = GlorotNormal()
+        if(hp['initializer'] == 'glorot'):
+            initializer = GlorotNormal()
+        else:
+            initializer = HeNormal()
+
+        
         # The same activation for all hidden is relu
-        activation = Activation('relu')
+        if(hp['activation'] == 'relu'):
+           activation = Activation('relu')
+        else:
+            activation = PReLU()
 
         model = Sequential()
-        model.add(RandomCrop(48,48))    
-
-        model.add(Conv2D(filters = 64, kernel_size = (3, 3), padding = 'same', input_shape = self.input_shape, kernel_initializer=initializer))
+        model.add(RandomCrop(48,48))
+        model.add(Conv2D(filters = 64, kernel_size = (3, 3), padding = 'same', kernel_initializer=initializer))
         model.add(BatchNormalization())
         model.add(activation)
+        
         model.add(Conv2D(filters = 64, kernel_size = (3, 3), padding = 'same', kernel_initializer=initializer))
         model.add(BatchNormalization())
         model.add(activation)
@@ -82,15 +90,24 @@ class ConcreteModel(HyperModel):
         return model
 
     def define_hp(hp_model = None):
-        hp = ConcreateHyperParameters()
+        hp = HyperParameters()
+
+        if(hp_model is None):
+            hp_model = ConcreateHyperParameters()
+
+        hp.Choice('activation', hp_model.activation)
+        hp.Choice('initializer',hp_model.initializer)
+
         return hp
 
     def generate_model_name(iterable, **kwarg): 
         hp = kwarg['hp']
-        return f'VGG-B-{hp["name"]}'
+        name = f'VGG-B-{hp["initializer"]}-{hp["activation"]}'
+        return name
 
 class ConcreateHyperParameters():
     """!Important! Ensure that if min provided, then max > min is specified either.
     """
-    def __init__(self):
-        pass
+    def __init__(self, activation = ['relu','prelu'], initializer = ['glorot','he']):
+        self.activation = activation
+        self.initializer = initializer

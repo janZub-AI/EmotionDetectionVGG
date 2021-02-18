@@ -5,9 +5,9 @@ from utils import Utils
 
 def evaluate_model(path, model_name):
     model = keras.models.load_model(os.path.join(path, model_name))
-    train_dataset = Utils.load_dataset('train')
-    dev_dataset = Utils.load_dataset('dev')
-    test_dataset = Utils.load_dataset('test')
+    train_dataset = Utils.load_data_generator('train', 32)
+    dev_dataset = Utils.load_data_generator('dev', 32)
+    test_dataset = Utils.load_data_generator('test', 32)
 
     print('-----------------------------------------')
     print(model_name) 
@@ -22,7 +22,7 @@ def evaluate_model(path, model_name):
     print("test loss, test acc:", test_results)
     print('-----------------------------------------')
 
-models = '20210216-071325'
+models = '20210218-230114'
 
 
 dirname = os.path.join(os.path.dirname( __file__ ), os.path.pardir, os.path.pardir)

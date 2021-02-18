@@ -7,9 +7,9 @@ class CallbackCreator():
                 filepath = f'models_checkpoint/{current_time}/'+'{epoch:02d}-{' + monitor + ':.5f}.hdf5',
                 save_weights_only=False,
                 verbose = 1,
-                monitor= monitor,
+                monitor = monitor,
                 mode='auto',
-                period = 10,
+                period = 1,
                 save_best_only=True)
                 
     def get_tensorboard(log_dir):

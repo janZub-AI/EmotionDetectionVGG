@@ -65,15 +65,15 @@ TUNER_SETTINGS = {
     'batches_per_category' : 100000,
     'batches_for_validation' : 10000,
     'epochs' : 300,
-    'max_trials' : 2,
+    'max_trials' : 1,
     'executions_per_trial' : 1,
     'objective' : 'val_loss',
     'callbacks' : [lr_callback, mc_callback]
     }
 
 # params
-
-hp = HyperParameters()
+hp_cp = ConcreateHyperParameters
+hp = ConcreteModel.define_hp()
 hypermodel = ConcreteModel(num_classes = 7, input_shape = (48,48,1))
 
 run_tuner(hypermodel, hp)
