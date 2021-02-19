@@ -1,11 +1,46 @@
 from keras.preprocessing.image import ImageDataGenerator
+from keras.preprocessing.image import load_img, img_to_array, save_img
 from matplotlib import pyplot
 import os
+import numpy as np
 import tensorflow as tf
-
 from data_operations import DataOperations
 
-def generate_aug_data(df,class_name, datagen, aug_class_name_path):
+from skimage import exposure
+dirname = os.path.join(os.path.dirname( __file__ ), os.path.pardir)
+
+
+files = DataOperations.get_data(os.path.join(dirname, 'train')).get('filename')
+
+dataset = np.ndarray(shape=(len(files), 48, 48, 1),
+				dtype=np.float32)
+i = 0
+for f in files:
+	image = load_img(f, 
+	color_mode='grayscale', target_size=(48,48),
+	interpolation='nearest')
+
+	img_array = img_to_array(image)
+	dataset[i] = tf.cast(img_array/255. ,tf.float32)
+	i += 1
+	
+mean = dataset.mean(axis=(0,1,2))
+std = dataset.std(axis=(0,1,2))
+
+print(mean,std)
+
+def EH(img):
+	img_adapteq = exposure.equalize_hist(img)
+	return img_adapteq
+
+
+def generate_aug_data(df,class_name, aug_class_name_path):
+	       
+	datagen = ImageDataGenerator(rotation_range=45, 
+								vertical_flip=True, 
+								horizontal_flip=True, 
+								width_shift_range=shift, 
+								height_shift_range=shift)
 	created = 0
 	limit = len(df.get('filename'))
 	# Custom logic per class
@@ -22,6 +57,32 @@ def generate_aug_data(df,class_name, datagen, aug_class_name_path):
 		if(created > limit):
 			return
 
+def generate_norm_data(df,class_name, aug_class_name_path):
+
+	local_files = df.get('filename')
+	local_dataset = np.ndarray(shape=(len(local_files), 48, 48, 1), dtype=np.float32)
+	i = 0
+	for f in local_files:
+		image = load_img(f, 
+		color_mode='grayscale', target_size=(48,48),
+		interpolation='nearest')
+
+		img_array = img_to_array(image)
+		local_dataset[i] = tf.cast(img_array/255. ,tf.float32)
+		i += 1
+
+	print(local_dataset[0,0,0])
+	local_dataset[..., 0] -= mean[0]
+	local_dataset[..., 0] /= std[0]
+	print('==============')
+	print(local_dataset[0,0,0])
+	i=0
+	for f in local_files:
+		_, fn = os.path.split(f)
+		local_dataset[i] = EH(local_dataset[i])
+		save_img(os.path.join(aug_class_name_path, fn), local_dataset[i])
+		i += 1
+
 def view_batch(batch):
 	batch_size = len(batch[0])
 	for i in range(0, batch_size):
@@ -32,7 +93,7 @@ def view_batch(batch):
 def process_folder(folder):
 
 	folder_path = os.path.join(dirname, folder)	
-	aug_path = os.path.join(dirname, f'aug_{folder}')
+	aug_path = os.path.join(dirname, f'norm_{folder}')
 	if not os.path.exists(aug_path):
 		os.makedirs(aug_path)
 
@@ -45,36 +106,16 @@ def process_folder(folder):
 		folder_class_name_path = os.path.join(folder_path, class_name)
 		data = DataOperations.get_data_for_category(folder_class_name_path)
 
-		generate_aug_data(data, class_name, datagen, aug_class_name_path)
+		generate_norm_data(data, class_name, aug_class_name_path)
+		#generate_aug_data(data, class_name, aug_class_name_path)
 
 
 
-dirname = os.path.join(os.path.dirname( __file__ ), os.path.pardir)
+	# add std and mean normalization, not sample-wise but training wise
 
-# in case of zca_whitening 
-'''files = DataOperations.get_data(os.path.join(dirname, 'train'))
-
-imgs = []
-
-for f in files.get('file'):
-	image = tf.keras.preprocessing.image.load_img(
-            f, color_mode='grayscale', target_size=(48,48),
-            interpolation='nearest'
-        )
-	img_array = tf.keras.preprocessing.image.img_to_array(image)
-	img_array = tf.cast(img_array ,tf.float32)
-	imgs.append(img_array)
-'''
-shift = 0.1
-datagen = ImageDataGenerator(rotation_range=45, 
-							 vertical_flip=True, 
-							 horizontal_flip=True, 
-							 width_shift_range=shift, 
-							 height_shift_range=shift)
-#datagen.fit(imgs)
 
 
 
 folders = ['train', 'dev', 'test']
-
-process_folder('dev')
+for f in folders:
+	process_folder(f)

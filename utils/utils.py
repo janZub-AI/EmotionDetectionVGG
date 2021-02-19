@@ -4,16 +4,8 @@ import pandas as pd
 import numpy as np
 import datetime
 import time
-from keras.utils import to_categorical
-from keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
-from numpy import array
-from numpy import argmax
-from sklearn.preprocessing import LabelEncoder
-from sklearn.preprocessing import OneHotEncoder
+from keras.preprocessing.image import ImageDataGenerator
 import matplotlib.pyplot as plt
-import sys
-from skimage import exposure
-from matplotlib import pyplot
 from utils.data_operations import DataOperations
 
 dirname = os.path.join(os.path.dirname( __file__ ), os.pardir)
@@ -22,15 +14,12 @@ max_int = 99999
 class Utils():
     
     def load_data_generator(subfolder, batch_size):
-        def EH(img):
-            img_adapteq = exposure.equalize_hist(img)
-            return img_adapteq
+        path = os.path.join(dirname, f'norm_{subfolder}')
 
-        path = os.path.join(dirname, subfolder)
-        generator = ImageDataGenerator( horizontal_flip = True,
+        generator = ImageDataGenerator(horizontal_flip = True,
                                         samplewise_center = True,
-                                        samplewise_std_normalization = True,
-                                        preprocessing_function = EH)
+                                        samplewise_std_normalization = True)
+
 
         data = generator.flow_from_directory(directory = path,
                                       target_size = (48,48), 
