@@ -24,22 +24,24 @@ class ConcreteModel(HyperModel):
 
     def build(self, hp):
 
-        # The same initializer
+        initializer = GlorotNormal()
+        '''# The same initializer
         if(hp['initializer'] == 'glorot'):
             initializer = GlorotNormal()
         else:
             initializer = HeNormal()
-
+        '''
         
-        # The same activation for all hidden is relu
+        activation = Activation('relu')
+        '''#The same activation for all hidden is relu
         if(hp['activation'] == 'relu'):
            activation = Activation('relu')
         else:
             activation = PReLU()
-
+        '''
         model = Sequential()
         model.add(RandomCrop(48,48))
-        model.add(Conv2D(filters = 64, kernel_size = (3, 3), padding = 'same', kernel_initializer=initializer))
+        model.add(Conv2D(filters = 64, kernel_size = (3, 3), input_shape = self.input_shape, padding = 'same', kernel_initializer=initializer))
         model.add(BatchNormalization())
         model.add(activation)
         

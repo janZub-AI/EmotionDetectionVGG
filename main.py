@@ -16,7 +16,7 @@ project_name = 'vgg'
 if tf.config.list_physical_devices('GPU'):
     physical_devices = tf.config.list_physical_devices('GPU')
     tf.config.experimental.set_memory_growth(physical_devices[0], enable=True)
-    tf.config.experimental.set_virtual_device_configuration(physical_devices[0], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=8000)])
+    tf.config.experimental.set_virtual_device_configuration(physical_devices[0], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=6500)])
 
 # helpers
 def load_data():
@@ -72,8 +72,8 @@ TUNER_SETTINGS = {
     }
 
 # params
-hp_cp = ConcreateHyperParameters
-hp = ConcreteModel.define_hp()
+hp_cp = ConcreateHyperParameters(activation=['relu'], initializer=['glorot'])
+hp = ConcreteModel.define_hp(hp_cp)
 hypermodel = ConcreteModel(num_classes = 7, input_shape = (48,48,1))
 
 run_tuner(hypermodel, hp)

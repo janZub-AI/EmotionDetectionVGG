@@ -15,11 +15,9 @@ class Utils():
     
     def load_data_generator(subfolder, batch_size):
         path = os.path.join(dirname, f'norm_{subfolder}')
-
-        generator = ImageDataGenerator(horizontal_flip = True,
-                                        samplewise_center = True,
-                                        samplewise_std_normalization = True)
-
+        shift = 0.15
+        
+        generator = ImageDataGenerator(horizontal_flip = True, width_shift_range = shift, height_shift_range = shift)
 
         data = generator.flow_from_directory(directory = path,
                                       target_size = (48,48), 
